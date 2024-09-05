@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Product Offers</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.js"></script> <!-- Add SQL.js -->
 </head>
 <body>
 
@@ -46,180 +47,126 @@
 </div>
 
 <script>
-// Function to load JSON data
-async function loadOffers() {
-  try {
-    const response = await fetch('offers.json'); // Ensure offers.json is in the same directory
-    const data = await response.json();
+  // Function to load and query SQLite database
+  async function loadDatabase() {
+    // Initialize SQL.js
+    const SQL = await initSqlJs({
+      locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/${file}`
+    });
+
+    // Fetch the SQLite database file (data.db)
+    const response = await fetch('data.db'); // Ensure 'data.db' is in the same directory
+    const buffer = await response.arrayBuffer();
+
+    // Load the database into SQL.js
+    const db = new SQL.Database(new Uint8Array(buffer));
+
+    // Query to fetch the offers, products, and stores
+    const query = `
+      SELECT 
+          p.ean, p.description, p.categories_da, p.categories_en, p.image, 
+          s.name AS store_name, s.brand, s.city, s.street, s.zip, s.latitude, s.longitude,
+          o.currency, o.discount, o.newPrice, o.originalPrice, o.percentDiscount, o.stock, o.stockUnit, o.startTime, o.endTime, o.lastUpdate
+      FROM offers o
+      JOIN products p ON o.ean = p.ean
+      JOIN stores s ON o.store_id = s.id
+    `;
     
-    // Get the current date
-    const currentDate = new Date();
+    const result = db.exec(query); // Execute the query
 
-    // Containers for dynamic content
-    const productList = document.getElementById('product-list');
-    const storeList = document.getElementById('store-list');
-    const categoryList = document.getElementById('category-list');
-
-    const stores = new Set();
-    const categories = new Set();
-    const productsByStore = {};
-    const productsByCategory = {};
-
-    // Parse data and populate stores and categories
-    data.forEach(store => {
-      if (store && store.store && store.store.name) {
-        const storeName = store.store.name;
-        const storeAddress = `${store.store.address?.street || 'Unknown'}, ${store.store.address?.city || 'Unknown'}, ${store.store.address?.zip || 'Unknown'}`;
-        const storeBrand = store.store.brand || 'Unknown';
-        const storeCoordinates = store.store.coordinates ? store.store.coordinates.join(', ') : 'Unknown';
-
-        stores.add(storeName);
-
-        store.clearances.forEach(clearance => {
-          const offer = clearance.offer;
-          const product = clearance.product;
-          const category = product.categories?.en || 'Uncategorized';
-
-          // Convert offer start and end times to Date objects
-          const offerStartTime = new Date(offer.startTime);
-          const offerEndTime = new Date(offer.endTime);
-
-          // Only consider offers that are currently valid
-          if (currentDate >= offerStartTime && currentDate <= offerEndTime) {
-            // Add product to the store and category data structures
-            if (!productsByStore[storeName]) productsByStore[storeName] = [];
-            productsByStore[storeName].push({ offer, product, store });
-
-            if (!productsByCategory[category]) productsByCategory[category] = [];
-            productsByCategory[category].push({ offer, product, store });
-
-            categories.add(category);
-          }
-        });
-      }
-    });
-
-    // Populate sidebar filters
-    populateSidebarFilters(stores, categories);
-
-    // Show all products initially
-    displayProducts(data.flatMap(store => store.clearances).filter(item => item));
-
-    // Event listener for store filter
-    document.querySelectorAll('.store-filter').forEach(element => {
-      element.addEventListener('click', function() {
-        const storeName = this.getAttribute('data-store');
-        toggleActiveFilter(this, 'store-filter');
-        displayProducts(productsByStore[storeName] || []);
+    // Format the results into a more usable structure
+    const columns = result[0].columns;
+    const values = result[0].values;
+    
+    const offers = values.map(row => {
+      let offer = {};
+      columns.forEach((col, index) => {
+        offer[col] = row[index];
       });
+      return offer;
     });
 
-    // Event listener for category filter
-    document.querySelectorAll('.category-filter').forEach(element => {
-      element.addEventListener('click', function() {
-        const category = this.getAttribute('data-category');
-        toggleActiveFilter(this, 'category-filter');
-        displayProducts(productsByCategory[category] || []);
-      });
-    });
+    // Display the offers
+    displayProducts(offers);
 
-  } catch (error) {
-    console.error('Error loading offers:', error);
+    // Populate store and category filters
+    populateFilters(offers);
   }
-}
 
-// Function to populate sidebar filters
-function populateSidebarFilters(stores, categories) {
-  const storeList = document.getElementById('store-list');
-  const categoryList = document.getElementById('category-list');
+  // Function to display products in the HTML
+  function displayProducts(offers) {
+    const productList = document.getElementById('product-list');
+    productList.innerHTML = ''; // Clear existing products
 
-  // Populate store filters
-  stores.forEach(store => {
-    const storeItem = document.createElement('li');
-    storeItem.classList.add('list-group-item', 'store-filter');
-    storeItem.setAttribute('data-store', store);
-    storeItem.textContent = store;
-    storeList.appendChild(storeItem);
-  });
-
-  // Populate category filters
-  categories.forEach(category => {
-    const categoryItem = document.createElement('li');
-    categoryItem.classList.add('list-group-item', 'category-filter');
-    categoryItem.setAttribute('data-category', category);
-    categoryItem.textContent = category;
-    categoryList.appendChild(categoryItem);
-  });
-}
-
-// Function to toggle active filter
-function toggleActiveFilter(element, filterClass) {
-  document.querySelectorAll(`.${filterClass}`).forEach(el => el.classList.remove('active'));
-  element.classList.add('active');
-}
-
-// Function to calculate hours since last update
-function hoursSinceUpdate(lastUpdate) {
-  const lastUpdateTime = new Date(lastUpdate);
-  const currentTime = new Date();
-  const hoursDiff = Math.floor((currentTime - lastUpdateTime) / (1000 * 60 * 60));
-  return `${hoursDiff} hours ago`;
-}
-
-// Function to display products
-function displayProducts(products) {
-  const productList = document.getElementById('product-list');
-  productList.innerHTML = ''; // Clear existing products
-
-  products.forEach(item => {
-    if (item && item.offer && item.product && item.store) {
-      const { offer, product, store } = item;
-      const storeName = store.store.name || 'Unknown';
-      const storeAddress = `${store.store.address?.street || 'Unknown'}, ${store.store.address?.city || 'Unknown'}, ${store.store.address?.zip || 'Unknown'}`;
-      const storeBrand = store.store.brand || 'Unknown';
-      const storeCoordinates = store.store.coordinates ? store.store.coordinates.join(', ') : 'Unknown';
-
-      // Create card element for each product
+    offers.forEach(offer => {
       const productCard = document.createElement('div');
       productCard.classList.add('col-6', 'col-md-3', 'mb-4');
       productCard.innerHTML = `
         <div class="card text-center">
-          <a href="#" data-bs-toggle="modal" data-bs-target="#imageModal" data-bs-image="${product.image ? product.image : 'placeholder.jpg'}">
-            <img src="${product.image ? product.image : 'placeholder.jpg'}" class="card-img-top img-thumbnail" alt="${product.description}">
+          <a href="#" data-bs-toggle="modal" data-bs-target="#imageModal" data-bs-image="${offer.image ? offer.image : 'placeholder.jpg'}">
+            <img src="${offer.image ? offer.image : 'placeholder.jpg'}" class="card-img-top img-thumbnail" alt="${offer.description}">
           </a>
           <div class="card-body p-2">
-            <h6 class="card-title">${product.description}</h6>
-            <p class="card-text"><small><strong>Category:</strong> ${product.categories?.en || 'N/A'}</small></p>
+            <h6 class="card-title">${offer.description}</h6>
+            <p class="card-text"><small><strong>Category:</strong> ${offer.categories_en || 'N/A'}</small></p>
             <p class="card-text"><small><strong>Original Price:</strong> ${offer.originalPrice} ${offer.currency}</small></p>
             <p class="card-text"><small><strong>New Price:</strong> ${offer.newPrice} ${offer.currency}</small></p>
             <p class="card-text"><small><strong>Discount:</strong> ${offer.percentDiscount}% (${offer.discount} ${offer.currency})</small></p>
             <p class="card-text"><small><strong>Stock:</strong> ${offer.stock} ${offer.stockUnit}</small></p>
             <p class="card-text"><small><strong>Offer Valid Until:</strong> ${new Date(offer.endTime).toLocaleDateString()}</small></p>
             <p class="card-text"><small><strong>Offer Starts On:</strong> ${new Date(offer.startTime).toLocaleDateString()}</small></p>
-            <p class="card-text"><small><strong>Last Updated:</strong> ${hoursSinceUpdate(offer.lastUpdate)}</small></p>
-            <p class="card-text"><small><strong>Store:</strong> ${storeName} (${storeBrand})</small></p>
-            <p class="card-text"><small><strong>Location:</strong> ${storeAddress}</small></p>
-            <p class="card-text"><small><strong>Coordinates:</strong> ${storeCoordinates}</small></p>
+            <p class="card-text"><small><strong>Last Updated:</strong> ${new Date(offer.lastUpdate).toLocaleDateString()}</small></p>
+            <p class="card-text"><small><strong>Store:</strong> ${offer.store_name} (${offer.brand})</small></p>
+            <p class="card-text"><small><strong>Location:</strong> ${offer.street}, ${offer.city}, ${offer.zip}</small></p>
           </div>
         </div>
       `;
-
-      // Append the product card to the list
       productList.appendChild(productCard);
-    }
-  });
-
-  // Add event listener for image click to open modal
-  document.querySelectorAll('[data-bs-toggle="modal"]').forEach(element => {
-    element.addEventListener('click', function(event) {
-      const imageUrl = this.getAttribute('data-bs-image');
-      document.getElementById('modalImage').src = imageUrl;
     });
-  });
-}
 
-// Load offers on page load
-window.onload = loadOffers;
+    // Add event listener for image click to open modal
+    document.querySelectorAll('[data-bs-toggle="modal"]').forEach(element => {
+      element.addEventListener('click', function(event) {
+        const imageUrl = this.getAttribute('data-bs-image');
+        document.getElementById('modalImage').src = imageUrl;
+      });
+    });
+  }
+
+  // Function to populate store and category filters
+  function populateFilters(offers) {
+    const storeSet = new Set();
+    const categorySet = new Set();
+    
+    offers.forEach(offer => {
+      storeSet.add(offer.store_name);
+      categorySet.add(offer.categories_en);
+    });
+
+    const storeList = document.getElementById('store-list');
+    const categoryList = document.getElementById('category-list');
+
+    // Populate store filters
+    storeSet.forEach(store => {
+      const storeItem = document.createElement('li');
+      storeItem.classList.add('list-group-item', 'store-filter');
+      storeItem.setAttribute('data-store', store);
+      storeItem.textContent = store;
+      storeList.appendChild(storeItem);
+    });
+
+    // Populate category filters
+    categorySet.forEach(category => {
+      const categoryItem = document.createElement('li');
+      categoryItem.classList.add('list-group-item', 'category-filter');
+      categoryItem.setAttribute('data-category', category);
+      categoryItem.textContent = category;
+      categoryList.appendChild(categoryItem);
+    });
+  }
+
+  // Load the database and offers when the page loads
+  window.onload = loadDatabase;
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
