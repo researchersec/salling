@@ -109,6 +109,7 @@ async function loadOffers() {
     document.querySelectorAll('.store-filter').forEach(element => {
       element.addEventListener('click', function() {
         const storeName = this.getAttribute('data-store');
+        toggleActiveFilter(this, 'store-filter');
         displayProducts(productsByStore[storeName] || []);
       });
     });
@@ -117,6 +118,7 @@ async function loadOffers() {
     document.querySelectorAll('.category-filter').forEach(element => {
       element.addEventListener('click', function() {
         const category = this.getAttribute('data-category');
+        toggleActiveFilter(this, 'category-filter');
         displayProducts(productsByCategory[category] || []);
       });
     });
@@ -150,6 +152,20 @@ function populateSidebarFilters(stores, categories) {
   });
 }
 
+// Function to toggle active filter
+function toggleActiveFilter(element, filterClass) {
+  document.querySelectorAll(`.${filterClass}`).forEach(el => el.classList.remove('active'));
+  element.classList.add('active');
+}
+
+// Function to calculate hours since last update
+function hoursSinceUpdate(lastUpdate) {
+  const lastUpdateTime = new Date(lastUpdate);
+  const currentTime = new Date();
+  const hoursDiff = Math.floor((currentTime - lastUpdateTime) / (1000 * 60 * 60));
+  return `${hoursDiff} hours ago`;
+}
+
 // Function to display products
 function displayProducts(products) {
   const productList = document.getElementById('product-list');
@@ -180,7 +196,7 @@ function displayProducts(products) {
             <p class="card-text"><small><strong>Stock:</strong> ${offer.stock} ${offer.stockUnit}</small></p>
             <p class="card-text"><small><strong>Offer Valid Until:</strong> ${new Date(offer.endTime).toLocaleDateString()}</small></p>
             <p class="card-text"><small><strong>Offer Starts On:</strong> ${new Date(offer.startTime).toLocaleDateString()}</small></p>
-            <p class="card-text"><small><strong>Last Updated:</strong> ${new Date(offer.lastUpdate).toLocaleDateString()}</small></p>
+            <p class="card-text"><small><strong>Last Updated:</strong> ${hoursSinceUpdate(offer.lastUpdate)}</small></p>
             <p class="card-text"><small><strong>Store:</strong> ${storeName} (${storeBrand})</small></p>
             <p class="card-text"><small><strong>Location:</strong> ${storeAddress}</small></p>
             <p class="card-text"><small><strong>Coordinates:</strong> ${storeCoordinates}</small></p>
