@@ -6,7 +6,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Product Offers</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.js"></script> <!-- Add SQL.js -->
 </head>
 <body>
 
@@ -46,142 +45,93 @@
   </div>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.6.2/sql-wasm.js"></script>
 <script>
-  // Function to load and query SQLite database
-  async function loadDatabase() {
-    try {
-      // Initialize SQL.js
-      const SQL = await initSqlJs({
-        locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/${file}`
-      });
+// Function to load the SQLite database
+async function loadDatabase() {
+  try {
+    // Fetch the SQLite database file (you need to ensure the db file is available in the correct directory)
+    const response = await fetch('data.db');
+    const arrayBuffer = await response.arrayBuffer();
 
-      // Fetch the SQLite database file (data.db)
-      const response = await fetch('data.db'); // Ensure 'data.db' is in the same directory
-      const buffer = await response.arrayBuffer();
+    // Load the database using SQL.js
+    const SQL = await initSqlJs({ locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.6.2/sql-wasm.wasm` });
+    const db = new SQL.Database(new Uint8Array(arrayBuffer));
 
-      // Load the database into SQL.js
-      const db = new SQL.Database(new Uint8Array(buffer));
-
-      // List all tables in the database for debugging
-      const tablesQuery = "SELECT name FROM sqlite_master WHERE type='table';";
-      const tablesResult = db.exec(tablesQuery);
-      console.log("Tables in the database:", tablesResult[0].values);
-
-      // Query to fetch the offers, products, and stores
-      const query = `
-        SELECT 
-            p.ean, p.description, p.categories_da, p.categories_en, p.image, 
-            s.name AS store_name, s.brand, s.city, s.street, s.zip, s.latitude, s.longitude,
-            o.currency, o.discount, o.newPrice, o.originalPrice, o.percentDiscount, o.stock, o.stockUnit, o.startTime, o.endTime, o.lastUpdate
-        FROM offers o
-        JOIN products p ON o.ean = p.ean
-        JOIN stores s ON o.store_id = s.id
-      `;
-
-      const result = db.exec(query);
-      console.log("Offers data:", result);
-
-      if (result.length === 0) {
-        console.error("No offers found in the database.");
-        return;
-      }
-
-      // Process and display the offers
-      const columns = result[0].columns;
-      const values = result[0].values;
-
-      const offers = values.map(row => {
-        let offer = {};
-        columns.forEach((col, index) => {
-          offer[col] = row[index];
-        });
-        return offer;
-      });
-
-      // Display the products on the webpage
-      displayProducts(offers);
-
-      // Populate store and category filters
-      populateFilters(offers);
-    } catch (error) {
-      console.error('Error loading database:', error);
-    }
-  }
-
-  // Function to display products in the HTML
-  function displayProducts(offers) {
-    const productList = document.getElementById('product-list');
-    productList.innerHTML = ''; // Clear existing products
-
-    offers.forEach(offer => {
-      const productCard = document.createElement('div');
-      productCard.classList.add('col-6', 'col-md-3', 'mb-4');
-      productCard.innerHTML = `
-        <div class="card text-center">
-          <a href="#" data-bs-toggle="modal" data-bs-target="#imageModal" data-bs-image="${offer.image ? offer.image : 'placeholder.jpg'}">
-            <img src="${offer.image ? offer.image : 'placeholder.jpg'}" class="card-img-top img-thumbnail" alt="${offer.description}">
-          </a>
-          <div class="card-body p-2">
-            <h6 class="card-title">${offer.description}</h6>
-            <p class="card-text"><small><strong>Category:</strong> ${offer.categories_en || 'N/A'}</small></p>
-            <p class="card-text"><small><strong>Original Price:</strong> ${offer.originalPrice} ${offer.currency}</small></p>
-            <p class="card-text"><small><strong>New Price:</strong> ${offer.newPrice} ${offer.currency}</small></p>
-            <p class="card-text"><small><strong>Discount:</strong> ${offer.percentDiscount}% (${offer.discount} ${offer.currency})</small></p>
-            <p class="card-text"><small><strong>Stock:</strong> ${offer.stock} ${offer.stockUnit}</small></p>
-            <p class="card-text"><small><strong>Offer Valid Until:</strong> ${new Date(offer.endTime).toLocaleDateString()}</small></p>
-            <p class="card-text"><small><strong>Offer Starts On:</strong> ${new Date(offer.startTime).toLocaleDateString()}</small></p>
-            <p class="card-text"><small><strong>Last Updated:</strong> ${new Date(offer.lastUpdate).toLocaleDateString()}</small></p>
-            <p class="card-text"><small><strong>Store:</strong> ${offer.store_name} (${offer.brand})</small></p>
-            <p class="card-text"><small><strong>Location:</strong> ${offer.street}, ${offer.city}, ${offer.zip}</small></p>
-          </div>
-        </div>
-      `;
-      productList.appendChild(productCard);
-    });
-
-    // Add event listener for image click to open modal
-    document.querySelectorAll('[data-bs-toggle="modal"]').forEach(element => {
-      element.addEventListener('click', function(event) {
-        const imageUrl = this.getAttribute('data-bs-image');
-        document.getElementById('modalImage').src = imageUrl;
-      });
-    });
-  }
-
-  // Function to populate store and category filters
-  function populateFilters(offers) {
-    const storeSet = new Set();
-    const categorySet = new Set();
+    // Query the database
+    const query = `
+      SELECT 
+        p.ean, p.description, p.categories_da, p.categories_en, p.image, 
+        s.name AS store_name, s.brand AS store_brand, s.city AS store_city, s.street AS store_street, s.zip AS store_zip, s.latitude, s.longitude,
+        o.currency, o.discount, o.newPrice, o.originalPrice, o.percentDiscount, o.stock, o.stockUnit, o.startTime, o.endTime, o.lastUpdate
+      FROM offers o
+      JOIN products p ON o.ean = p.ean
+      JOIN stores s ON o.store_id = s.id
+    `;
     
-    offers.forEach(offer => {
-      storeSet.add(offer.store_name);
-      categorySet.add(offer.categories_en);
-    });
-
-    const storeList = document.getElementById('store-list');
-    const categoryList = document.getElementById('category-list');
-
-    // Populate store filters
-    storeSet.forEach(store => {
-      const storeItem = document.createElement('li');
-      storeItem.classList.add('list-group-item', 'store-filter');
-      storeItem.setAttribute('data-store', store);
-      storeItem.textContent = store;
-      storeList.appendChild(storeItem);
-    });
-
-    // Populate category filters
-    categorySet.forEach(category => {
-      const categoryItem = document.createElement('li');
-      categoryItem.classList.add('list-group-item', 'category-filter');
-      categoryItem.setAttribute('data-category', category);
-      categoryItem.textContent = category;
-      categoryList.appendChild(categoryItem);
-    });
+    const results = db.exec(query);
+    
+    if (results.length > 0) {
+      displayProducts(results[0].values);  // Pass the results to display function
+    }
+  } catch (error) {
+    console.error('Error loading database:', error);
   }
+}
 
-  // Load the database and offers when the page loads
-  window.onload = loadDatabase;
+// Function to display products
+function displayProducts(products) {
+  const productList = document.getElementById('product-list');
+  productList.innerHTML = '';  // Clear any existing products
+
+  products.forEach(item => {
+    const [
+      ean, description, categories_da, categories_en, image,
+      store_name, store_brand, store_city, store_street, store_zip, latitude, longitude,
+      currency, discount, newPrice, originalPrice, percentDiscount, stock, stockUnit, startTime, endTime, lastUpdate
+    ] = item;
+
+    const storeAddress = `${store_street || 'Unknown'}, ${store_city || 'Unknown'}, ${store_zip || 'Unknown'}`;
+    const storeCoordinates = `${latitude}, ${longitude}`;
+
+    // Create card element for each product
+    const productCard = document.createElement('div');
+    productCard.classList.add('col-6', 'col-md-3', 'mb-4');
+    productCard.innerHTML = `
+      <div class="card text-center">
+        <a href="#" data-bs-toggle="modal" data-bs-target="#imageModal" data-bs-image="${image ? image : 'placeholder.jpg'}">
+          <img src="${image ? image : 'placeholder.jpg'}" class="card-img-top img-thumbnail" alt="${description}">
+        </a>
+        <div class="card-body p-2">
+          <h6 class="card-title">${description}</h6>
+          <p class="card-text"><small><strong>Category:</strong> ${categories_en || 'N/A'}</small></p>
+          <p class="card-text"><small><strong>Original Price:</strong> ${originalPrice} ${currency}</small></p>
+          <p class="card-text"><small><strong>New Price:</strong> ${newPrice} ${currency}</small></p>
+          <p class="card-text"><small><strong>Discount:</strong> ${percentDiscount}% (${discount} ${currency})</small></p>
+          <p class="card-text"><small><strong>Stock:</strong> ${stock} ${stockUnit}</small></p>
+          <p class="card-text"><small><strong>Offer Valid Until:</strong> ${new Date(endTime).toLocaleDateString()}</small></p>
+          <p class="card-text"><small><strong>Last Updated:</strong> ${new Date(lastUpdate).toLocaleDateString()}</small></p>
+          <p class="card-text"><small><strong>Store:</strong> ${store_name} (${store_brand})</small></p>
+          <p class="card-text"><small><strong>Location:</strong> ${storeAddress}</small></p>
+          <p class="card-text"><small><strong>Coordinates:</strong> ${storeCoordinates}</small></p>
+        </div>
+      </div>
+    `;
+
+    productList.appendChild(productCard);
+  });
+
+  // Add event listener for image click to open modal
+  document.querySelectorAll('[data-bs-toggle="modal"]').forEach(element => {
+    element.addEventListener('click', function(event) {
+      const imageUrl = this.getAttribute('data-bs-image');
+      document.getElementById('modalImage').src = imageUrl;
+    });
+  });
+}
+
+// Load the database and offers on page load
+window.onload = loadDatabase;
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
