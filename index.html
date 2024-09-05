@@ -17,6 +17,17 @@
   </div>
 </div>
 
+<!-- Modal for image preview -->
+<div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-body">
+        <img src="" id="modalImage" class="img-fluid" alt="Product Image">
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
 // Function to load JSON data
 async function loadOffers() {
@@ -28,24 +39,31 @@ async function loadOffers() {
     const productList = document.getElementById('product-list');
 
     data.forEach(store => {
+      const storeName = store.store.name;
+      const storeAddress = `${store.store.address.street}, ${store.store.address.city}, ${store.store.address.zip}`;
+
       store.clearances.forEach(clearance => {
         const offer = clearance.offer;
         const product = clearance.product;
 
         // Create card element for each product
         const productCard = document.createElement('div');
-        productCard.classList.add('col-md-4', 'mb-4');
+        productCard.classList.add('col-6', 'col-md-3', 'mb-4');
         productCard.innerHTML = `
-          <div class="card">
-            <img src="${product.image ? product.image : 'placeholder.jpg'}" class="card-img-top" alt="${product.description}">
-            <div class="card-body">
-              <h5 class="card-title">${product.description}</h5>
-              <p class="card-text"><strong>Category:</strong> ${product.categories.en || 'N/A'}</p>
-              <p class="card-text"><strong>Original Price:</strong> ${offer.originalPrice} ${offer.currency}</p>
-              <p class="card-text"><strong>New Price:</strong> ${offer.newPrice} ${offer.currency}</p>
-              <p class="card-text"><strong>Discount:</strong> ${offer.percentDiscount}%</p>
-              <p class="card-text"><strong>Stock:</strong> ${offer.stock} ${offer.stockUnit}</p>
-              <p class="card-text"><strong>Offer Valid Until:</strong> ${new Date(offer.endTime).toLocaleDateString()}</p>
+          <div class="card text-center">
+            <a href="#" data-bs-toggle="modal" data-bs-target="#imageModal" data-bs-image="${product.image ? product.image : 'placeholder.jpg'}">
+              <img src="${product.image ? product.image : 'placeholder.jpg'}" class="card-img-top img-thumbnail" alt="${product.description}">
+            </a>
+            <div class="card-body p-2">
+              <h6 class="card-title">${product.description}</h6>
+              <p class="card-text"><small><strong>Category:</strong> ${product.categories.en || 'N/A'}</small></p>
+              <p class="card-text"><small><strong>Original Price:</strong> ${offer.originalPrice} ${offer.currency}</small></p>
+              <p class="card-text"><small><strong>New Price:</strong> ${offer.newPrice} ${offer.currency}</small></p>
+              <p class="card-text"><small><strong>Discount:</strong> ${offer.percentDiscount}%</small></p>
+              <p class="card-text"><small><strong>Stock:</strong> ${offer.stock} ${offer.stockUnit}</small></p>
+              <p class="card-text"><small><strong>Offer Valid Until:</strong> ${new Date(offer.endTime).toLocaleDateString()}</small></p>
+              <p class="card-text"><small><strong>Store:</strong> ${storeName}</small></p>
+              <p class="card-text"><small><strong>Location:</strong> ${storeAddress}</small></p>
             </div>
           </div>
         `;
@@ -54,6 +72,15 @@ async function loadOffers() {
         productList.appendChild(productCard);
       });
     });
+
+    // Add event listener for image click to open modal
+    document.querySelectorAll('[data-bs-toggle="modal"]').forEach(element => {
+      element.addEventListener('click', function(event) {
+        const imageUrl = this.getAttribute('data-bs-image');
+        document.getElementById('modalImage').src = imageUrl;
+      });
+    });
+
   } catch (error) {
     console.error('Error loading offers:', error);
   }
