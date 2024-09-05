@@ -41,6 +41,8 @@ async function loadOffers() {
     data.forEach(store => {
       const storeName = store.store.name;
       const storeAddress = `${store.store.address.street}, ${store.store.address.city}, ${store.store.address.zip}`;
+      const storeBrand = store.store.brand;
+      const storeCoordinates = store.store.coordinates.join(', ');
 
       store.clearances.forEach(clearance => {
         const offer = clearance.offer;
@@ -59,11 +61,14 @@ async function loadOffers() {
               <p class="card-text"><small><strong>Category:</strong> ${product.categories.en || 'N/A'}</small></p>
               <p class="card-text"><small><strong>Original Price:</strong> ${offer.originalPrice} ${offer.currency}</small></p>
               <p class="card-text"><small><strong>New Price:</strong> ${offer.newPrice} ${offer.currency}</small></p>
-              <p class="card-text"><small><strong>Discount:</strong> ${offer.percentDiscount}%</small></p>
+              <p class="card-text"><small><strong>Discount:</strong> ${offer.percentDiscount}% (${offer.discount} ${offer.currency})</small></p>
               <p class="card-text"><small><strong>Stock:</strong> ${offer.stock} ${offer.stockUnit}</small></p>
               <p class="card-text"><small><strong>Offer Valid Until:</strong> ${new Date(offer.endTime).toLocaleDateString()}</small></p>
-              <p class="card-text"><small><strong>Store:</strong> ${storeName}</small></p>
+              <p class="card-text"><small><strong>Offer Starts On:</strong> ${new Date(offer.startTime).toLocaleDateString()}</small></p>
+              <p class="card-text"><small><strong>Last Updated:</strong> ${new Date(offer.lastUpdate).toLocaleDateString()}</small></p>
+              <p class="card-text"><small><strong>Store:</strong> ${storeName} (${storeBrand})</small></p>
               <p class="card-text"><small><strong>Location:</strong> ${storeAddress}</small></p>
+              <p class="card-text"><small><strong>Coordinates:</strong> ${storeCoordinates}</small></p>
             </div>
           </div>
         `;
