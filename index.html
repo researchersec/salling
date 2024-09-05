@@ -49,48 +49,63 @@
 <script>
   // Function to load and query SQLite database
   async function loadDatabase() {
-    // Initialize SQL.js
-    const SQL = await initSqlJs({
-      locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/${file}`
-    });
-
-    // Fetch the SQLite database file (data.db)
-    const response = await fetch('data.db'); // Ensure 'data.db' is in the same directory
-    const buffer = await response.arrayBuffer();
-
-    // Load the database into SQL.js
-    const db = new SQL.Database(new Uint8Array(buffer));
-
-    // Query to fetch the offers, products, and stores
-    const query = `
-      SELECT 
-          p.ean, p.description, p.categories_da, p.categories_en, p.image, 
-          s.name AS store_name, s.brand, s.city, s.street, s.zip, s.latitude, s.longitude,
-          o.currency, o.discount, o.newPrice, o.originalPrice, o.percentDiscount, o.stock, o.stockUnit, o.startTime, o.endTime, o.lastUpdate
-      FROM offers o
-      JOIN products p ON o.ean = p.ean
-      JOIN stores s ON o.store_id = s.id
-    `;
-    
-    const result = db.exec(query); // Execute the query
-
-    // Format the results into a more usable structure
-    const columns = result[0].columns;
-    const values = result[0].values;
-    
-    const offers = values.map(row => {
-      let offer = {};
-      columns.forEach((col, index) => {
-        offer[col] = row[index];
+    try {
+      // Initialize SQL.js
+      const SQL = await initSqlJs({
+        locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/${file}`
       });
-      return offer;
-    });
 
-    // Display the offers
-    displayProducts(offers);
+      // Fetch the SQLite database file (data.db)
+      const response = await fetch('data.db'); // Ensure 'data.db' is in the same directory
+      const buffer = await response.arrayBuffer();
 
-    // Populate store and category filters
-    populateFilters(offers);
+      // Load the database into SQL.js
+      const db = new SQL.Database(new Uint8Array(buffer));
+
+      // List all tables in the database for debugging
+      const tablesQuery = "SELECT name FROM sqlite_master WHERE type='table';";
+      const tablesResult = db.exec(tablesQuery);
+      console.log("Tables in the database:", tablesResult[0].values);
+
+      // Query to fetch the offers, products, and stores
+      const query = `
+        SELECT 
+            p.ean, p.description, p.categories_da, p.categories_en, p.image, 
+            s.name AS store_name, s.brand, s.city, s.street, s.zip, s.latitude, s.longitude,
+            o.currency, o.discount, o.newPrice, o.originalPrice, o.percentDiscount, o.stock, o.stockUnit, o.startTime, o.endTime, o.lastUpdate
+        FROM offers o
+        JOIN products p ON o.ean = p.ean
+        JOIN stores s ON o.store_id = s.id
+      `;
+
+      const result = db.exec(query);
+      console.log("Offers data:", result);
+
+      if (result.length === 0) {
+        console.error("No offers found in the database.");
+        return;
+      }
+
+      // Process and display the offers
+      const columns = result[0].columns;
+      const values = result[0].values;
+
+      const offers = values.map(row => {
+        let offer = {};
+        columns.forEach((col, index) => {
+          offer[col] = row[index];
+        });
+        return offer;
+      });
+
+      // Display the products on the webpage
+      displayProducts(offers);
+
+      // Populate store and category filters
+      populateFilters(offers);
+    } catch (error) {
+      console.error('Error loading database:', error);
+    }
   }
 
   // Function to display products in the HTML
