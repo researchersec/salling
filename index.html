@@ -50,13 +50,18 @@
 // Function to load the SQLite database
 async function loadDatabase() {
   try {
-    // Fetch the SQLite database file (you need to ensure the db file is available in the correct directory)
+    console.log('Fetching database file...');
+    // Fetch the SQLite database file (ensure it's in the same directory)
     const response = await fetch('data.db');
     const arrayBuffer = await response.arrayBuffer();
+
+    console.log('Database file loaded, initializing SQL.js...');
 
     // Load the database using SQL.js
     const SQL = await initSqlJs({ locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.6.2/sql-wasm.wasm` });
     const db = new SQL.Database(new Uint8Array(arrayBuffer));
+
+    console.log('Database initialized, running query...');
 
     // Query the database
     const query = `
@@ -72,7 +77,10 @@ async function loadDatabase() {
     const results = db.exec(query);
     
     if (results.length > 0) {
+      console.log('Query executed successfully, displaying results...');
       displayProducts(results[0].values);  // Pass the results to display function
+    } else {
+      console.log('No data found in the database.');
     }
   } catch (error) {
     console.error('Error loading database:', error);
@@ -121,6 +129,8 @@ function displayProducts(products) {
     productList.appendChild(productCard);
   });
 
+  console.log('Products displayed successfully.');
+  
   // Add event listener for image click to open modal
   document.querySelectorAll('[data-bs-toggle="modal"]').forEach(element => {
     element.addEventListener('click', function(event) {
