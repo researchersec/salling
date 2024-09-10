@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Product Offers</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 </head>
 <body>
 
@@ -13,6 +14,12 @@
   <div class="row">
     <!-- Sidebar for filters -->
     <div class="col-md-3 col-lg-2 bg-light p-3">
+      <h5>Enter Your Address</h5>
+      <form id="address-form">
+        <input type="text" class="form-control mb-3" id="address" placeholder="Enter your address" required>
+        <button type="submit" class="btn btn-primary">Find Nearby Stores</button>
+      </form>
+
       <h5>Filter by Store</h5>
       <ul class="list-group mb-4" id="store-list">
         <!-- Store filters will be dynamically inserted here -->
@@ -27,6 +34,10 @@
     <!-- Main content area for products -->
     <div class="col-md-9 col-lg-10 mt-3">
       <h1 class="mb-4">Current Product Offers</h1>
+
+      <!-- Map for user to click and select location -->
+      <div id="map" style="height: 400px;" class="mb-4"></div>
+
       <div class="row" id="product-list">
         <!-- Products will be dynamically inserted here -->
       </div>
@@ -46,18 +57,87 @@
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.6.2/sql-wasm.js"></script>
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
 <script>
+// Initialize map
+const map = L.map('map').setView([56.2639, 9.5018], 7); // Initial view on Denmark
+
+// Load OpenStreetMap tiles
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  maxZoom: 19,
+  attribution: '© OpenStreetMap'
+}).addTo(map);
+
+// Variable to store user-selected coordinates
+let userCoordinates = null;
+
+// Handle map click to select a location
+map.on('click', function(e) {
+  userCoordinates = [e.latlng.lat, e.latlng.lng];
+  console.log('Selected coordinates:', userCoordinates);
+
+  // Optional: Add a marker to show the clicked location
+  L.marker(userCoordinates).addTo(map).bindPopup('Selected Location').openPopup();
+});
+
+// Geocode address input and show nearby stores
+document.getElementById('address-form').addEventListener('submit', async function(event) {
+  event.preventDefault();
+  const address = document.getElementById('address').value;
+
+  // Use OpenStreetMap Nominatim API to geocode the address
+  const geocodeUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`;
+  const response = await fetch(geocodeUrl);
+  const data = await response.json();
+
+  if (data && data.length > 0) {
+    const { lat, lon } = data[0];
+    userCoordinates = [parseFloat(lat), parseFloat(lon)];
+    console.log('Geocoded address coordinates:', userCoordinates);
+
+    // Pan the map to the user's location
+    map.setView(userCoordinates, 13);
+    
+    // Optional: Add a marker at the geocoded location
+    L.marker(userCoordinates).addTo(map).bindPopup('Your Location').openPopup();
+
+    // Now filter stores and display offers from nearby stores
+    loadDatabase();
+  } else {
+    console.log('Address not found');
+  }
+});
+
+// Haversine formula to calculate distance between two coordinates
+function calculateDistance(coord1, coord2) {
+  const toRad = angle => angle * (Math.PI / 180);
+  const lat1 = coord1[0], lon1 = coord1[1];
+  const lat2 = coord2[0], lon2 = coord2[1];
+  const R = 6371; // Radius of the Earth in km
+
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+
+  const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+            Math.sin(dLon / 2) * Math.sin(dLon / 2);
+
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  const distance = R * c; // Distance in km
+
+  return distance;
+}
+
 // Function to load the SQLite database
 async function loadDatabase() {
   try {
     console.log('Fetching database file...');
-    // Fetch the SQLite database file (ensure it's in the same directory)
     const response = await fetch('data.db');
     const arrayBuffer = await response.arrayBuffer();
 
     console.log('Database file loaded, initializing SQL.js...');
 
-    // Load the database using SQL.js
     const SQL = await initSqlJs({ locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.6.2/sql-wasm.wasm` });
     const db = new SQL.Database(new Uint8Array(arrayBuffer));
 
@@ -75,10 +155,24 @@ async function loadDatabase() {
     `;
     
     const results = db.exec(query);
-    
+
     if (results.length > 0) {
-      console.log('Query executed successfully, displaying results...');
-      displayProducts(results[0].values);  // Pass the results to display function
+      console.log('Query executed successfully, filtering by distance...');
+      const storeData = results[0].values;
+
+      // Filter the stores based on user's location and show products from nearby stores
+      const filteredStores = storeData.filter(store => {
+        const storeCoordinates = [store[11], store[10]]; // Latitude and Longitude
+        const distance = calculateDistance(userCoordinates, storeCoordinates);
+        return distance <= 10; // Example: filter stores within 10 km radius
+      });
+
+      if (filteredStores.length > 0) {
+        console.log('Displaying products from nearby stores');
+        displayProducts(filteredStores);  // Pass the results to display function
+      } else {
+        console.log('No stores found within 10 km.');
+      }
     } else {
       console.log('No data found in the database.');
     }
@@ -102,7 +196,6 @@ function displayProducts(products) {
     const storeAddress = `${store_street || 'Unknown'}, ${store_city || 'Unknown'}, ${store_zip || 'Unknown'}`;
     const storeCoordinates = `${latitude}, ${longitude}`;
 
-    // Create card element for each product
     const productCard = document.createElement('div');
     productCard.classList.add('col-6', 'col-md-3', 'mb-4');
     productCard.innerHTML = `
@@ -129,8 +222,6 @@ function displayProducts(products) {
     productList.appendChild(productCard);
   });
 
-  console.log('Products displayed successfully.');
-  
   // Add event listener for image click to open modal
   document.querySelectorAll('[data-bs-toggle="modal"]').forEach(element => {
     element.addEventListener('click', function(event) {
