@@ -3,6 +3,7 @@ name: Fetch Data and Push Changes
 on:
   schedule:
     - cron: '0 * * * *'  # Run every hour at the top of the hour
+  workflow_dispatch:
 
 jobs:
   run-script:
