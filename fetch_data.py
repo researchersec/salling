@@ -3,6 +3,7 @@ import json
 import sqlite3
 import requests
 import time
+import os
 
 # Define the API endpoint and headers
 url = "https://api.sallinggroup.com/v1/food-waste"
