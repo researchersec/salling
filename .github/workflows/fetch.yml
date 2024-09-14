@@ -35,15 +35,5 @@ jobs:
         git config --global user.email "github-actions[bot]@users.noreply.github.com"
         git add data.db
         git commit -m "Update data.db with new data"
-      continue-on-error: true  # Continue even if no changes (no commit needed)
+        git push
 
-    - name: Push changes back to repository
-      uses: actions/github-script@v6
-      with:
-        script: |
-          github.actions.createDispatch({
-            ref: 'main',
-            token: process.env.GITHUB_TOKEN
-          })
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
