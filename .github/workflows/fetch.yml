@@ -38,6 +38,12 @@ jobs:
       continue-on-error: true  # Continue even if no changes (no commit needed)
 
     - name: Push changes back to repository
-      uses: ad-m/github-push-action@v1  # Using an action to push back changes
+      uses: actions/github-script@v6
       with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}  # Use the GitHub Actions token
+        script: |
+          github.actions.createDispatch({
+            ref: 'main',
+            token: process.env.GITHUB_TOKEN
+          })
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
