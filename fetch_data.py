@@ -29,8 +29,8 @@ conn = sqlite3.connect('data.db')
 cursor = conn.cursor()
 
 # Drop the offers and stores tables if they exist to change the schema (optional)
-cursor.execute('DROP TABLE IF EXISTS offers')
-cursor.execute('DROP TABLE IF EXISTS stores')
+#cursor.execute('DROP TABLE IF EXISTS offers')
+#cursor.execute('DROP TABLE IF EXISTS stores')
 
 # Create tables if they don't exist
 cursor.execute('''
