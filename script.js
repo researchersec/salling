@@ -41,7 +41,8 @@ document.addEventListener("DOMContentLoaded", () => {
 const populateProductsAndStores = (productsData, storesData) => {
     // Populate the products object with product details
     productsData.forEach(product => {
-        products[product[0]] = product; // Store entire product data indexed by EAN
+        const ean = product[0]; // EAN is the first item in the product array
+        products[ean] = product; // Store entire product data indexed by EAN
     });
 
     // Populate the stores object with store details
