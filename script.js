@@ -17,6 +17,10 @@ document.addEventListener("DOMContentLoaded", () => {
             // Populate products and stores first, then populate the offers table
             populateProductsAndStores(data.products, data.stores);
 
+            // Log all EANs for troubleshooting
+            console.log("Products loaded:", Object.keys(products));
+            console.log("Offers loaded:", offersData);
+
             // Populate table with offers
             populateOffersTable(offersData);
 
@@ -76,6 +80,9 @@ const populateOffersTable = (offers) => {
         const ean = offer[1]; // EAN from the offer data
         const product = products[ean];  // Find the product by EAN
         
+        // Log the EAN being checked
+        console.log(`Checking EAN: ${ean}`);
+
         if (!product) {
             console.warn(`Product with EAN ${ean} not found in products data.`);
             return;  // Skip this row if the product is not found
