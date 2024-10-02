@@ -41,11 +41,7 @@ document.addEventListener("DOMContentLoaded", () => {
 const populateProductsAndStores = (productsData, storesData) => {
     // Populate the products object with product details
     productsData.forEach(product => {
-        products[product[0]] = {
-            description: product[1],
-            category: product[2],
-            image: product[4]
-        };
+        products[product[0]] = product; // Store entire product data indexed by EAN
     });
 
     // Populate the stores object with store details
@@ -76,12 +72,17 @@ const populateOffersTable = (offers) => {
     }
 
     offers.forEach(offer => {
-        const product = products[offer[1]];  // Fetch product by EAN from the offer
-        const store = stores[offer[2]];      // Fetch store by store ID
+        const ean = offer[1]; // EAN from the offer data
+        const product = products[ean];  // Find the product by EAN
+        
+        if (!product) {
+            console.warn(`Product with EAN ${ean} not found in products data.`);
+            return;  // Skip this row if the product is not found
+        }
 
-        // Default placeholders for missing product details
-        const productDescription = product ? product.description : 'Unknown Product';
-        const productImage = product ? product.image : 'path_to_placeholder_image.png';  // Use a placeholder image if product image is not found
+        const productName = product[1];    // Product name
+        const productImage = product[4];   // Product image URL
+        const store = stores[offer[2]];    // Fetch store by store ID
 
         // Default placeholders for store details if not found
         const storeName = store ? store.name : 'Unknown Store';
@@ -90,24 +91,22 @@ const populateOffersTable = (offers) => {
         const row = document.createElement("tr");
         row.innerHTML = `
             <td>
-                <img src="${productImage}" alt="${productDescription}" class="product-image">
-                ${productDescription}
+                <img src="${productImage || 'path_to_placeholder_image.png'}" alt="${productName}" class="product-image" style="width: 50px; height: auto;">
+                ${productName}
             </td>
             <td data-bs-toggle="tooltip" title="${storeLocation}">
                 ${storeName}
             </td>
-            <td>${offer[3]}</td>
-            <td>${offer[5]}</td>
-            <td>${offer[6]}</td>
-            <td>${offer[4]}</td>
+            <td>${offer[3]}</td>  <!-- Currency -->
+            <td>${offer[5]}</td>  <!-- New Price -->
+            <td>${offer[6]}</td>  <!-- Original Price -->
+            <td>${offer[4]}</td>  <!-- Discount -->
         `;
 
         // Add click event to show product modal
-        if (product) {
-            row.addEventListener("click", () => {
-                showProductModal(product);
-            });
-        }
+        row.addEventListener("click", () => {
+            showProductModal(product);
+        });
 
         offersTable.appendChild(row);
     });
@@ -119,13 +118,11 @@ const populateOffersTable = (offers) => {
     });
 };
 
-
-
 // Function to display the product details modal
 const showProductModal = (product) => {
-    document.getElementById("modalProductImage").src = product.image || '';
-    document.getElementById("modalProductDescription").innerText = product.description || 'No description available.';
-    document.getElementById("modalProductCategory").innerText = product.category ? `Category: ${product.category}` : 'No category available.';
+    document.getElementById("modalProductImage").src = product[4] || '';
+    document.getElementById("modalProductDescription").innerText = product[1] || 'No description available.';
+    document.getElementById("modalProductCategory").innerText = product[2] ? `Category: ${product[2]}` : 'No category available.';
     
     // Show the modal
     const modal = new bootstrap.Modal(document.getElementById('productModal'));
