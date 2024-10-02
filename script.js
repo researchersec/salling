@@ -92,6 +92,7 @@ const populateOffersTable = (offers) => {
                 <td>${offer[6]}</td>
                 <td>${offer[4]}</td>
             `;
+            // Add click event to show product modal
             row.addEventListener("click", () => {
                 showProductModal(product);
             });
@@ -108,25 +109,13 @@ const populateOffersTable = (offers) => {
     });
 };
 
-// Show Product Modal
+// Function to display the product details modal
 const showProductModal = (product) => {
-    document.getElementById("modalProductImage").src = product.image;
-    document.getElementById("modalProductDescription").innerText = product.description;
-    document.getElementById("modalProductCategory").innerText = `Category: ${product.category}`;
-    new bootstrap.Modal(document.getElementById('productModal')).show();
+    document.getElementById("modalProductImage").src = product.image || '';
+    document.getElementById("modalProductDescription").innerText = product.description || 'No description available.';
+    document.getElementById("modalProductCategory").innerText = product.category ? `Category: ${product.category}` : 'No category available.';
+    
+    // Show the modal
+    const modal = new bootstrap.Modal(document.getElementById('productModal'));
+    modal.show();
 };
-
-// Initial table population
-populateOffersTable(offersData);
-
-// Store Filter Logic
-document.getElementById("storeFilter").addEventListener("change", function () {
-    const selectedStore = this.value;
-    let filteredOffers = offersData;
-    if (selectedStore !== "all") {
-        filteredOffers = offersData.filter(offer => offer[2] === selectedStore);
-    }
-    populateOffersTable(filteredOffers);
-});
-});
-});
