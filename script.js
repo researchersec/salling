@@ -76,34 +76,39 @@ const populateOffersTable = (offers) => {
     }
 
     offers.forEach(offer => {
-        const product = products[offer[1]]; // Fetch the product by EAN
-        const store = stores[offer[2]];
+        const product = products[offer[1]];  // Fetch product by EAN from the offer
+        const store = stores[offer[2]];      // Fetch store by store ID
 
-        if (!product) {
-            console.warn(`Product with EAN ${offer[1]} not found in products data.`);
-            return;  // Skip this offer since the product is not found
-        }
+        // Default placeholders for missing product details
+        const productDescription = product ? product.description : 'Unknown Product';
+        const productImage = product ? product.image : 'path_to_placeholder_image.png';  // Use a placeholder image if product image is not found
+
+        // Default placeholders for store details if not found
+        const storeName = store ? store.name : 'Unknown Store';
+        const storeLocation = store ? `${store.street}, ${store.city}, ${store.country}` : 'Unknown Location';
 
         const row = document.createElement("tr");
         row.innerHTML = `
             <td>
-                <img src="${product.image || ''}" alt="${product.description || 'No Image'}" class="product-image">
-                ${product.description || 'Unknown Product'}
+                <img src="${productImage}" alt="${productDescription}" class="product-image">
+                ${productDescription}
             </td>
-            <td data-bs-toggle="tooltip" title="${store ? store.street + ', ' + store.city + ', ' + store.country : 'Unknown Store'}">
-                ${store ? store.name : 'Unknown Store'}
+            <td data-bs-toggle="tooltip" title="${storeLocation}">
+                ${storeName}
             </td>
             <td>${offer[3]}</td>
             <td>${offer[5]}</td>
             <td>${offer[6]}</td>
             <td>${offer[4]}</td>
         `;
-        
+
         // Add click event to show product modal
-        row.addEventListener("click", () => {
-            showProductModal(product);
-        });
-        
+        if (product) {
+            row.addEventListener("click", () => {
+                showProductModal(product);
+            });
+        }
+
         offersTable.appendChild(row);
     });
 
@@ -113,6 +118,7 @@ const populateOffersTable = (offers) => {
         return new bootstrap.Tooltip(tooltipTriggerEl);
     });
 };
+
 
 
 // Function to display the product details modal
