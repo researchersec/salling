@@ -1,0 +1,173 @@
+{
+    "products": [
+        [
+            "5713507042217",
+            "VANILJE YOG \u00d8KO L\u00d8GISMOSE",
+            "Mejeri & k\u00f8l>Mejeri>Yoghurt & syrnede m\u00e6lkeprodukter>Yoghurt",
+            "Dairy And Cold Storage>Dairy>Yoghurt Soured Milk Products>Yoghurt",
+            "https://digitalassets.sallinggroup.com/image/upload/e_trim/c_limit,e_sharpen:80,f_auto,q_auto,w_400,h_400/70250f65764e654b100552cb93d64a5c"
+        ],
+        [
+            "8414897101108",
+            "CROUTONER HVID. PANALCA",
+            "Br\u00f8d & kager>Kiks & kn\u00e6kbr\u00f8d>Kiks>Croutoner & grissini",
+            "Bread And Cakes>Crackers Crisp Bread>Crackers>Croutons Breadsticks",
+            "https://digitalassets.sallinggroup.com/image/upload/e_trim/c_limit,e_sharpen:80,f_auto,q_auto,w_400,h_400/52e47d37-278a-4eaf-af94-3bcf522f81d3"
+        ],
+        [
+            "5701205008031",
+            "CHIA BOLLER SCHULSTAD",
+            "Br\u00f8d & kager>Lyst & groft br\u00f8d>Boller",
+            "Bread And Cakes>Light Breads Dark Breads>Light Dark Buns",
+            "https://digitalassets.sallinggroup.com/image/upload/e_trim/c_limit,e_sharpen:80,f_auto,q_auto,w_400,h_400/2788bb76-d147-4e1b-8f5c-749762ab81ea"
+        ],
+        [
+            "5707673109089",
+            "PROTEINOST RIV HI! PROTEIN",
+            "",
+            "",
+            null
+        ],
+        [
+            "5710328002239",
+            "#KO LETM#LK L#GISMOSE",
+            "Mejeri & k\u00f8l>Mejeri>M\u00e6lk>Letm\u00e6lk",
+            "Dairy And Cold Storage>Dairy>Milk>Skimmed Milk",
+            "https://digitalassets.sallinggroup.com/image/upload/e_trim/c_limit,e_sharpen:80,f_auto,q_auto,w_400,h_400/88f6c5fa-fc96-4864-bbe2-af30a2ee3880"
+        ]
+    ],
+    "stores": [
+        [
+            "1fe45d71-61af-4173-80c1-59cae1a28825",
+            "Netto Parallelvej",
+            "netto",
+            "Kjellerup",
+            "DK",
+            "Parallelvej 2a",
+            "8620",
+            56.286544,
+            9.415194
+        ],
+        [
+            "12ef5187-8280-4593-be23-87dadb4fa85f",
+            "Netto H\u00f8jmarksvej Silkeborg",
+            "netto",
+            "Silkeborg",
+            "DK",
+            "Nordre H\u00f8jmarksvej 3",
+            "8600",
+            56.187653,
+            9.509402
+        ],
+        [
+            "6ddbf095-8b49-4178-a4bc-36316c5b7072",
+            "f\u00f8tex Silkeborg, N\u00f8rrev\u00e6nget",
+            "foetex",
+            "Silkeborg",
+            "DK",
+            "N\u00f8rrev\u00e6nget 47a",
+            "8600",
+            56.185932,
+            9.547033
+        ],
+        [
+            "393a3e85-dfec-4800-a666-f830532c7b18",
+            "Netto Borgergade Silkeborg",
+            "netto",
+            "Silkeborg",
+            "DK",
+            "Borgergade 110",
+            "8600",
+            56.18374,
+            9.54581
+        ],
+        [
+            "48edfd7a-0e8a-4c05-96f0-75057cec632a",
+            "f\u00f8tex Silkeborg, Torvet",
+            "foetex",
+            "Silkeborg",
+            "DK",
+            "Torvet 4-6",
+            "8600",
+            56.1692391,
+            9.5499731
+        ]
+    ],
+    "offers": [
+        [
+            1,
+            "5712580388175",
+            "1fe45d71-61af-4173-80c1-59cae1a28825",
+            "DKK",
+            5.0,
+            7.0,
+            12.0,
+            41.67,
+            2.0,
+            "each",
+            "2024-09-26T05:39:39.000Z",
+            "2024-09-30T21:59:59.000Z",
+            "2024-09-26T09:06:12.000Z"
+        ],
+        [
+            2,
+            "5712580388281",
+            "1fe45d71-61af-4173-80c1-59cae1a28825",
+            "DKK",
+            2.0,
+            7.0,
+            9.0,
+            22.22,
+            13.0,
+            "each",
+            "2024-09-26T00:43:45.000Z",
+            "2024-09-30T21:59:59.000Z",
+            "2024-09-29T12:56:15.000Z"
+        ],
+        [
+            3,
+            "5712580388205",
+            "1fe45d71-61af-4173-80c1-59cae1a28825",
+            "DKK",
+            10.0,
+            29.0,
+            39.0,
+            25.64,
+            1.0,
+            "each",
+            "2024-09-26T00:41:29.000Z",
+            "2024-09-30T21:59:59.000Z",
+            "2024-09-28T14:30:06.000Z"
+        ],
+        [
+            4,
+            "5712580388250",
+            "1fe45d71-61af-4173-80c1-59cae1a28825",
+            "DKK",
+            2.0,
+            6.0,
+            8.0,
+            25.0,
+            2.0,
+            "each",
+            "2024-09-26T00:42:51.000Z",
+            "2024-09-30T21:59:59.000Z",
+            "2024-09-29T14:56:20.000Z"
+        ],
+        [
+            5,
+            "5712580388618",
+            "1fe45d71-61af-4173-80c1-59cae1a28825",
+            "DKK",
+            7.95,
+            15.0,
+            22.95,
+            34.64,
+            1.0,
+            "each",
+            "2024-09-26T08:04:48.000Z",
+            "2024-09-29T21:59:59.000Z",
+            "2024-09-28T05:29:43.000Z"
+        ]
+    ]
+}
