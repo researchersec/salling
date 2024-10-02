@@ -35,35 +35,39 @@ document.addEventListener("DOMContentLoaded", () => {
                 const offersTable = document.querySelector("#offers-table tbody");
                 offersTable.innerHTML = "";  // Clear existing rows
                 offers.forEach(offer => {
-                    const product = products[offer[1]];
+                    const product = products[offer[1]]; // Fetch the product by EAN
                     const store = stores[offer[2]];
-
-                    const row = document.createElement("tr");
-                    row.innerHTML = `
-                        <td>
-                            <img src="${product.image}" alt="${product.description}" class="product-image">
-                            ${product.description}
-                        </td>
-                        <td data-bs-toggle="tooltip" title="${store.street}, ${store.city}, ${store.country}">
-                            ${store.name}
-                        </td>
-                        <td>${offer[3]}</td>
-                        <td>${offer[5]}</td>
-                        <td>${offer[6]}</td>
-                        <td>${offer[4]}</td>
-                    `;
-                    row.addEventListener("click", () => {
-                        showProductModal(product);
-                    });
-                    offersTable.appendChild(row);
+            
+                    // Check if product exists before rendering the row
+                    if (product) {
+                        const row = document.createElement("tr");
+                        row.innerHTML = `
+                            <td>
+                                <img src="${product.image || ''}" alt="${product.description || 'No Image'}" class="product-image">
+                                ${product.description || 'Unknown Product'}
+                            </td>
+                            <td data-bs-toggle="tooltip" title="${store ? store.street + ', ' + store.city + ', ' + store.country : 'Unknown Store'}">
+                                ${store ? store.name : 'Unknown Store'}
+                            </td>
+                            <td>${offer[3]}</td>
+                            <td>${offer[5]}</td>
+                            <td>${offer[6]}</td>
+                            <td>${offer[4]}</td>
+                        `;
+                        row.addEventListener("click", () => {
+                            showProductModal(product);
+                        });
+                        offersTable.appendChild(row);
+                    }
                 });
-
+            
                 // Initialize Bootstrap tooltips
-                var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+                var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
                 var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-                    return new bootstrap.Tooltip(tooltipTriggerEl)
+                    return new bootstrap.Tooltip(tooltipTriggerEl);
                 });
             };
+
 
             // Show Product Modal
             const showProductModal = (product) => {
