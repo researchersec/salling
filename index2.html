@@ -15,6 +15,14 @@
         .table th, .table td {
             color: #ffffff;
         }
+        .product-image {
+            width: 50px;
+            height: auto;
+        }
+        .modal-body img {
+            width: 100%;
+            height: auto;
+        }
     </style>
 </head>
 <body>
@@ -33,16 +41,33 @@
         <table class="table table-dark table-striped" id="offers-table">
             <thead>
                 <tr>
-                    <th scope="col" class="sortable" data-sort="ean">EAN</th>
-                    <th scope="col" class="sortable" data-sort="store">Store</th>
+                    <th scope="col">Product</th>
+                    <th scope="col">Store</th>
                     <th scope="col">Currency</th>
-                    <th scope="col" class="sortable" data-sort="newPrice">New Price</th>
-                    <th scope="col" class="sortable" data-sort="originalPrice">Original Price</th>
+                    <th scope="col">New Price</th>
+                    <th scope="col">Original Price</th>
                     <th scope="col">Discount</th>
                 </tr>
             </thead>
             <tbody></tbody>
         </table>
+    </div>
+
+    <!-- Product Modal -->
+    <div class="modal fade" id="productModal" tabindex="-1" aria-labelledby="productModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content bg-dark text-white">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="productModalLabel">Product Details</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <img id="modalProductImage" src="" alt="Product Image">
+                    <p id="modalProductDescription"></p>
+                    <p id="modalProductCategory"></p>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Bootstrap JS & jQuery -->
