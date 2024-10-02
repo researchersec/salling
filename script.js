@@ -1,3 +1,6 @@
+let products = {};  // Declare products globally
+let stores = {};    // Declare stores globally
+
 document.addEventListener("DOMContentLoaded", () => {
     fetch("database_data.json")
         .then(response => {
@@ -10,40 +13,9 @@ document.addEventListener("DOMContentLoaded", () => {
             console.log("Data fetched successfully:", data); // Log data to verify
 
             let offersData = data.offers || [];
-            let products = {};
-            let stores = {};
 
-            // Check if products and stores exist in data
-            if (!data.products || !data.stores) {
-                console.error("Products or Stores data is missing in the fetched JSON");
-                return;
-            }
-
-            // Map product EAN to product details
-            data.products.forEach(product => {
-                products[product[0]] = {
-                    description: product[1],
-                    category: product[2],
-                    image: product[4]
-                };
-            });
-
-            // Map store ID to store details
-            data.stores.forEach(store => {
-                stores[store[0]] = {
-                    name: store[1],
-                    brand: store[2],
-                    city: store[3],
-                    country: store[4],
-                    street: store[5]
-                };
-
-                // Populate the store filter dropdown
-                const option = document.createElement("option");
-                option.value = store[0];
-                option.text = store[1];
-                document.getElementById("storeFilter").appendChild(option);
-            });
+            // Populate products and stores first, then populate the offers table
+            populateProductsAndStores(data.products, data.stores);
 
             // Populate table with offers
             populateOffersTable(offersData);
@@ -65,12 +37,42 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 });
 
+// Function to populate the products and stores global variables
+const populateProductsAndStores = (productsData, storesData) => {
+    // Populate the products object with product details
+    productsData.forEach(product => {
+        products[product[0]] = {
+            description: product[1],
+            category: product[2],
+            image: product[4]
+        };
+    });
+
+    // Populate the stores object with store details
+    storesData.forEach(store => {
+        stores[store[0]] = {
+            name: store[1],
+            brand: store[2],
+            city: store[3],
+            country: store[4],
+            street: store[5]
+        };
+
+        // Populate the store filter dropdown
+        const option = document.createElement("option");
+        option.value = store[0];
+        option.text = store[1];
+        document.getElementById("storeFilter").appendChild(option);
+    });
+};
+
 const populateOffersTable = (offers) => {
     const offersTable = document.querySelector("#offers-table tbody");
     offersTable.innerHTML = "";  // Clear existing rows
 
     if (offers.length === 0) {
         console.warn("No offers found to populate the table.");
+        return;
     }
 
     offers.forEach(offer => {
