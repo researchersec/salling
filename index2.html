@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Product Collection</title>
+    <title>Advanced Product Collection</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -16,11 +16,14 @@
                 <li><a href="#meat">Meat & Fish</a></li>
             </ul>
         </nav>
+        <div class="search-bar">
+            <input type="text" id="search" placeholder="Search products...">
+        </div>
     </header>
 
     <main>
-        <section id="featured">
-            <h2>Featured Products</h2>
+        <section id="products">
+            <h2>Our Products</h2>
             <div id="product-grid" class="product-grid">
                 <!-- Products will be dynamically loaded here -->
             </div>
@@ -31,36 +34,89 @@
         <p>Contact us at info@productcollection.com | Follow us on Social Media</p>
     </footer>
 
+    <!-- Modal for Product Details -->
+    <div id="product-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <img id="modal-img" src="" alt="Product Image">
+            <h2 id="modal-title"></h2>
+            <p id="modal-category"></p>
+            <p id="modal-code"></p>
+            <p id="modal-desc"></p>
+        </div>
+    </div>
+
     <script>
         // Fetch the JSON file and load the data into the page
         fetch('database_data.json')
         .then(response => response.json())
         .then(data => {
             const productGrid = document.getElementById('product-grid');
-            
-            // Loop through the products and create HTML elements for each product
-            data.products.forEach(product => {
-                const productDiv = document.createElement('div');
-                productDiv.classList.add('product');
-                
-                const productImage = document.createElement('img');
-                productImage.src = product[4]; // Image URL
-                productImage.alt = product[1]; // Product name
-                
-                const productTitle = document.createElement('h3');
-                productTitle.textContent = product[1]; // Product name
-                
-                const productCategory = document.createElement('p');
-                productCategory.textContent = product[2]; // Product category path
+            const searchInput = document.getElementById('search');
 
-                // Append image, title, and category to the product div
-                productDiv.appendChild(productImage);
-                productDiv.appendChild(productTitle);
-                productDiv.appendChild(productCategory);
+            // Function to render products
+            const renderProducts = (products) => {
+                productGrid.innerHTML = ''; // Clear previous content
+                products.forEach(product => {
+                    const productDiv = document.createElement('div');
+                    productDiv.classList.add('product');
 
-                // Append product div to the grid
-                productGrid.appendChild(productDiv);
+                    const productImage = document.createElement('img');
+                    productImage.src = product[4] || 'placeholder.jpg'; // Default if image is null
+                    productImage.alt = product[1];
+
+                    const productTitle = document.createElement('h3');
+                    productTitle.textContent = product[1];
+
+                    const productCategory = document.createElement('p');
+                    productCategory.textContent = product[2];
+
+                    const productCode = document.createElement('p');
+                    productCode.textContent = `Product Code: ${product[0]}`;
+
+                    // Modal trigger
+                    productDiv.addEventListener('click', () => openModal(product));
+
+                    // Append to the grid
+                    productDiv.appendChild(productImage);
+                    productDiv.appendChild(productTitle);
+                    productDiv.appendChild(productCategory);
+                    productDiv.appendChild(productCode);
+                    productGrid.appendChild(productDiv);
+                });
+            };
+
+            // Function to open product modal
+            const openModal = (product) => {
+                document.getElementById('modal-img').src = product[4] || 'placeholder.jpg';
+                document.getElementById('modal-title').textContent = product[1];
+                document.getElementById('modal-category').textContent = `Category: ${product[2]}`;
+                document.getElementById('modal-code').textContent = `Product Code: ${product[0]}`;
+                document.getElementById('modal-desc').textContent = product[3] || 'No description available.';
+                document.getElementById('product-modal').style.display = 'block';
+            };
+
+            // Close modal
+            const closeModal = () => {
+                document.getElementById('product-modal').style.display = 'none';
+            };
+
+            document.querySelector('.close').addEventListener('click', closeModal);
+            window.addEventListener('click', (e) => {
+                if (e.target == document.getElementById('product-modal')) closeModal();
             });
+
+            // Filtering functionality
+            searchInput.addEventListener('input', (event) => {
+                const searchValue = event.target.value.toLowerCase();
+                const filteredProducts = data.products.filter(product =>
+                    product[1].toLowerCase().includes(searchValue) || product[2].toLowerCase().includes(searchValue)
+                );
+                renderProducts(filteredProducts);
+            });
+
+            // Initial render of products
+            renderProducts(data.products);
         })
         .catch(error => {
             console.error('Error loading the product data:', error);
