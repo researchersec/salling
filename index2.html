@@ -16,16 +16,51 @@
                 <li><a href="#meat">Meat & Fish</a></li>
             </ul>
         </nav>
-        <div class="search-bar">
-            <input type="text" id="search" placeholder="Search products...">
+        <div class="header-controls">
+            <div class="search-bar">
+                <input type="text" id="search" placeholder="Search products...">
+            </div>
+            <div class="cart-icon">
+                <img src="cart_icon.png" alt="Cart">
+                <span id="cart-count">0</span>
+            </div>
         </div>
     </header>
+
+    <aside class="filters">
+        <h3>Filter Products</h3>
+        <div>
+            <h4>Category</h4>
+            <select id="category-filter">
+                <option value="all">All</option>
+                <option value="Dairy">Dairy</option>
+                <option value="Bread">Bread</option>
+                <option value="Meat">Meat</option>
+            </select>
+        </div>
+        <div>
+            <h4>Sort By</h4>
+            <select id="sort-filter">
+                <option value="name">Name</option>
+                <option value="price">Price</option>
+            </select>
+        </div>
+        <div>
+            <h4>Price Range</h4>
+            <input type="range" id="price-filter" min="0" max="100" value="50">
+            <span id="price-value">Up to $50</span>
+        </div>
+    </aside>
 
     <main>
         <section id="products">
             <h2>Our Products</h2>
             <div id="product-grid" class="product-grid">
                 <!-- Products will be dynamically loaded here -->
+            </div>
+            <div class="pagination">
+                <button id="prev-page" disabled>Previous</button>
+                <button id="next-page">Next</button>
             </div>
         </section>
     </main>
@@ -43,84 +78,11 @@
             <p id="modal-category"></p>
             <p id="modal-code"></p>
             <p id="modal-desc"></p>
+            <button id="add-to-cart">Add to Cart</button>
+            <button id="add-to-wishlist">Add to Wishlist</button>
         </div>
     </div>
 
-    <script>
-        // Fetch the JSON file and load the data into the page
-        fetch('database_data.json')
-        .then(response => response.json())
-        .then(data => {
-            const productGrid = document.getElementById('product-grid');
-            const searchInput = document.getElementById('search');
-
-            // Function to render products
-            const renderProducts = (products) => {
-                productGrid.innerHTML = ''; // Clear previous content
-                products.forEach(product => {
-                    const productDiv = document.createElement('div');
-                    productDiv.classList.add('product');
-
-                    const productImage = document.createElement('img');
-                    productImage.src = product[4] || 'placeholder.jpg'; // Default if image is null
-                    productImage.alt = product[1];
-
-                    const productTitle = document.createElement('h3');
-                    productTitle.textContent = product[1];
-
-                    const productCategory = document.createElement('p');
-                    productCategory.textContent = product[2];
-
-                    const productCode = document.createElement('p');
-                    productCode.textContent = `Product Code: ${product[0]}`;
-
-                    // Modal trigger
-                    productDiv.addEventListener('click', () => openModal(product));
-
-                    // Append to the grid
-                    productDiv.appendChild(productImage);
-                    productDiv.appendChild(productTitle);
-                    productDiv.appendChild(productCategory);
-                    productDiv.appendChild(productCode);
-                    productGrid.appendChild(productDiv);
-                });
-            };
-
-            // Function to open product modal
-            const openModal = (product) => {
-                document.getElementById('modal-img').src = product[4] || 'placeholder.jpg';
-                document.getElementById('modal-title').textContent = product[1];
-                document.getElementById('modal-category').textContent = `Category: ${product[2]}`;
-                document.getElementById('modal-code').textContent = `Product Code: ${product[0]}`;
-                document.getElementById('modal-desc').textContent = product[3] || 'No description available.';
-                document.getElementById('product-modal').style.display = 'block';
-            };
-
-            // Close modal
-            const closeModal = () => {
-                document.getElementById('product-modal').style.display = 'none';
-            };
-
-            document.querySelector('.close').addEventListener('click', closeModal);
-            window.addEventListener('click', (e) => {
-                if (e.target == document.getElementById('product-modal')) closeModal();
-            });
-
-            // Filtering functionality
-            searchInput.addEventListener('input', (event) => {
-                const searchValue = event.target.value.toLowerCase();
-                const filteredProducts = data.products.filter(product =>
-                    product[1].toLowerCase().includes(searchValue) || product[2].toLowerCase().includes(searchValue)
-                );
-                renderProducts(filteredProducts);
-            });
-
-            // Initial render of products
-            renderProducts(data.products);
-        })
-        .catch(error => {
-            console.error('Error loading the product data:', error);
-        });
-    </script>
+    <script src="app.js"></script>
 </body>
 </html>
