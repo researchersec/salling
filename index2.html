@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Collection</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1>Product Collection</h1>
+        <nav>
+            <ul>
+                <li><a href="#dairy">Dairy & Cold Storage</a></li>
+                <li><a href="#bread">Bread & Cakes</a></li>
+                <li><a href="#meat">Meat & Fish</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <section id="featured">
+            <h2>Featured Products</h2>
+            <div id="product-grid" class="product-grid">
+                <!-- Products will be dynamically loaded here -->
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>Contact us at info@productcollection.com | Follow us on Social Media</p>
+    </footer>
+
+    <script>
+        // Fetch the JSON file and load the data into the page
+        fetch('path_to_your_json_file/database_data.json')
+        .then(response => response.json())
+        .then(data => {
+            const productGrid = document.getElementById('product-grid');
+            
+            // Loop through the products and create HTML elements for each product
+            data.products.forEach(product => {
+                const productDiv = document.createElement('div');
+                productDiv.classList.add('product');
+                
+                const productImage = document.createElement('img');
+                productImage.src = product[4]; // Image URL
+                productImage.alt = product[1]; // Product name
+                
+                const productTitle = document.createElement('h3');
+                productTitle.textContent = product[1]; // Product name
+                
+                const productCategory = document.createElement('p');
+                productCategory.textContent = product[2]; // Product category path
+
+                // Append image, title, and category to the product div
+                productDiv.appendChild(productImage);
+                productDiv.appendChild(productTitle);
+                productDiv.appendChild(productCategory);
+
+                // Append product div to the grid
+                productGrid.appendChild(productDiv);
+            });
+        })
+        .catch(error => {
+            console.error('Error loading the product data:', error);
+        });
+    </script>
+</body>
+</html>
