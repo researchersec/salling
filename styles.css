@@ -111,3 +111,74 @@ footer {
     background-color: #333;
     color: white;
 }
+
+/* Cart and Wishlist Styles */
+.header-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.cart-icon {
+    position: relative;
+    cursor: pointer;
+}
+
+.cart-icon img {
+    width: 30px;
+}
+
+#cart-count {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    background-color: red;
+    color: white;
+    border-radius: 50%;
+    padding: 2px 5px;
+    font-size: 12px;
+}
+
+/* Filters Sidebar */
+.filters {
+    width: 20%;
+    float: left;
+    padding: 20px;
+    background-color: #f4f4f4;
+    border-right: 1px solid #ddd;
+}
+
+.filters h3 {
+    font-size: 1.2rem;
+}
+
+.filters div {
+    margin-bottom: 20px;
+}
+
+.filters select,
+.filters input {
+    width: 100%;
+    padding: 10px;
+}
+
+/* Product Grid */
+.product-grid {
+    width: 75%;
+    float: right;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+/* Pagination */
+.pagination {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.pagination button {
+    padding: 10px;
+    margin: 5px;
+}
+
